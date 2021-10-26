@@ -1,0 +1,19 @@
+output: ''
+image_sets:
+  - name: macos
+    path: macos/Runner/Assets.xcassets/AppIcon.appiconset/
+    images:
+      - size: 16x16
+        filename: app_icon_16.png
+      - size: 32x32
+        filename: app_icon_32.png
+      - size: 64x64
+        filename: app_icon_64.png
+      - size: 128x128
+        filename: app_icon_128.png
+      - size: 256x256
+        filename: app_icon_256.png
+      - size: 512x512
+        filename: app_icon_512.png
+      - size: 1024x1024
+        filename: app_icon_1024.png

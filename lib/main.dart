@@ -1,6 +1,7 @@
 import 'package:anyinspect_server/anyinspect_server.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
 import './includes.dart';
@@ -10,7 +11,12 @@ void main() async {
   await WindowManager.instance.ensureInitialized();
   await initEnv();
   WindowManager.instance.setTitle('AnyInspect');
-  await AnyInspectServer.instance.start();
+
+  String? localIpAddress = await NetworkInfo().getWifiIP();
+  await AnyInspectServer.instance.start(
+    address: localIpAddress!,
+    port: 7700,
+  );
 
   runApp(const MyApp());
 }

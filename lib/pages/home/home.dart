@@ -18,6 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with AnyInspectServerListener {
+  List<Device> _devices = [];
   List<AnyInspectClient> _clients = [];
 
   String? _selectedClientId;
@@ -53,8 +54,14 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
         if (Platform.isMacOS) const SizedBox(height: 22),
         if (_selectedClientId != null)
           _SidebarHeader(
+            devices: _devices,
             clients: _clients,
             selectedClient: selectedClient,
+            onSelectedClientChanged: (newSelectedClient) {
+              setState(() {
+                _selectedClientId = newSelectedClient.id;
+              });
+            },
           ),
         const Divider(height: 0),
         const SizedBox(height: 4),
@@ -83,7 +90,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                       ),
                       title: Container(
                         padding: const EdgeInsets.only(bottom: 2),
-                        child: Text(plugin.id),
+                        child: Text(plugin.name),
                       ),
                       selected: _selectedClientPluginId == plugin.id,
                       onTap: () async {
@@ -168,6 +175,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
 
   @override
   void onClientConnect(AnyInspectClient client) {
+    _devices = AnyInspectServer.instance.allDevices;
     _clients = AnyInspectServer.instance.allClients;
     _selectedClientId = _clients.first.id;
     setState(() {});
@@ -175,19 +183,24 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
 
   @override
   void onClientDisconnect(AnyInspectClient client) {
+    _devices = AnyInspectServer.instance.allDevices;
     _clients = AnyInspectServer.instance.allClients;
     setState(() {});
   }
 }
 
 class _SidebarHeader extends StatelessWidget {
+  final List<Device> devices;
   final List<AnyInspectClient> clients;
   final AnyInspectClient selectedClient;
+  final ValueChanged<AnyInspectClient> onSelectedClientChanged;
 
   const _SidebarHeader({
     Key? key,
+    required this.devices,
     required this.clients,
     required this.selectedClient,
+    required this.onSelectedClientChanged,
   }) : super(key: key);
 
   CancelFunc _show(BuildContext targetContext) {
@@ -220,27 +233,24 @@ class _SidebarHeader extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (AnyInspectClient client in clients)
-                MenuItem(
-                  title: Text('${client.deviceName ?? client.deviceId ?? ''}'),
-                  selected: false,
-                  onTap: () async {},
+              for (Device device in devices)
+                MenuSection(
+                  title: Text(device.name ?? device.id ?? ''),
+                  children: [
+                    for (AnyInspectClient client
+                        in clients.where((e) => e.deviceId == device.id))
+                      MenuItem(
+                        title: Text(
+                          client.appName ?? client.appIdentifier ?? '',
+                        ),
+                        selected: client.id == selectedClient.id,
+                        onTap: () async {
+                          onSelectedClientChanged(client);
+                          cancel();
+                        },
+                      ),
+                  ],
                 ),
-              MenuItem(
-                title: const Text('APP2'),
-                selected: false,
-                onTap: () async {},
-              ),
-              MenuItem(
-                title: const Text('APP3'),
-                selected: false,
-                onTap: () async {},
-              ),
-              MenuItem(
-                title: const Text('APP4'),
-                selected: false,
-                onTap: () async {},
-              ),
             ],
           ),
         ),

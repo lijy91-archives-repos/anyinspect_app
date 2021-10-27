@@ -1,5 +1,7 @@
 PODS:
   - FlutterMacOS (1.0.0)
+  - network_info_plus_macos (0.0.1):
+    - FlutterMacOS
   - package_info_plus_macos (0.0.1):
     - FlutterMacOS
   - window_manager (0.0.1):
@@ -7,12 +9,15 @@ PODS:
 
 DEPENDENCIES:
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - network_info_plus_macos (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus_macos/macos`)
   - package_info_plus_macos (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus_macos/macos`)
   - window_manager (from `Flutter/ephemeral/.symlinks/plugins/window_manager/macos`)
 
 EXTERNAL SOURCES:
   FlutterMacOS:
     :path: Flutter/ephemeral
+  network_info_plus_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus_macos/macos
   package_info_plus_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus_macos/macos
   window_manager:
@@ -20,6 +25,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FlutterMacOS: 57701585bf7de1b3fc2bb61f6378d73bbdea8424
+  network_info_plus_macos: d2b9e6c01c291449b91a584217aa53b113847dbd
   package_info_plus_macos: f010621b07802a241d96d01876d6705f15e77c1c
   window_manager: f5fa14814635f059571527ddd5e676f688af552c
 

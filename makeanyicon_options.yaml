@@ -17,3 +17,8 @@ image_sets:
         filename: app_icon_512.png
       - size: 1024x1024
         filename: app_icon_1024.png
+  - name: windows
+    path: windows/runner/resources/
+    images:
+      - size: 256x256
+        filename: app_icon.ico

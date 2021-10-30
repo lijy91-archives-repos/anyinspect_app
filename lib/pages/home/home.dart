@@ -148,6 +148,11 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
         }
         return Container(
           margin: const EdgeInsets.only(right: 14),
+          decoration: BoxDecoration(
+            border: Platform.isWindows
+                ? Border(top: BorderSide(color: Theme.of(context).dividerColor))
+                : null,
+          ),
           child: MultiSplitViewTheme(
             child: MultiSplitView(
               children: [

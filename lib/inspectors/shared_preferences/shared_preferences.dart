@@ -16,21 +16,32 @@ class SharedPreferencesInspector extends StatefulWidget {
 }
 
 class _SharedPreferencesInspectorState extends State<SharedPreferencesInspector>
-    with SingleTickerProviderStateMixin {
+    with AnyInspectPluginEventListener {
   final List<Map<String, dynamic>> _records = [];
 
   @override
   void initState() {
-    widget.plugin.receive('getAllResult', (data) {
+    widget.plugin.addEventListener(this);
+    widget.plugin.callMethod('getAll');
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.plugin.removeEventListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onEvent(AnyInspectPluginEvent event) {
+    if (event.name == 'getAllSuccess') {
       List<Map<String, dynamic>> list =
-          List<Map<String, dynamic>>.from(data['list']);
+          List<Map<String, dynamic>>.from(event.arguments['list']);
       setState(() {
         _records.clear();
         _records.addAll(list);
       });
-    });
-    widget.plugin.send('getAll', {});
-    super.initState();
+    }
   }
 
   List<DataColumn> _buildDataColumns() {
@@ -67,7 +78,7 @@ class _SharedPreferencesInspectorState extends State<SharedPreferencesInspector>
   Widget build(BuildContext context) {
     return Inspector(
       child: DataTable(
-        initialColumnWeights: const [1, 1],
+        initialColumnWeights: const [2, 3],
         columns: _buildDataColumns(),
         rows: _buildDataRows(),
       ),

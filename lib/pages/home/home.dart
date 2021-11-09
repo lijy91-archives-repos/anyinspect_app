@@ -4,11 +4,24 @@ import 'package:anyinspect_client/anyinspect_client.dart';
 import 'package:anyinspect_server/anyinspect_server.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sfsymbols/flutter_sfsymbols.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../includes.dart';
+
+extension AnyInspectPluginExt on AnyInspectPlugin {
+  IconData get icon {
+    switch (id) {
+      case 'network':
+        return SFSymbols.globe;
+      default:
+    }
+    return SFSymbols.cube_fill;
+  }
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -18,6 +31,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with AnyInspectServerListener {
+  Version? _latestVersion;
+
   List<Device> _devices = [];
   List<AnyInspectClient> _clients = [];
 
@@ -40,12 +55,21 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
   void initState() {
     AnyInspectServer.instance.addListener(this);
     super.initState();
+
+    _loadData();
   }
 
   @override
   void dispose() {
     AnyInspectServer.instance.removeListener(this);
     super.dispose();
+  }
+
+  void _loadData() async {
+    try {
+      _latestVersion = await ApiClient.instance.version('latest').get();
+      setState(() {});
+    } catch (error) {}
   }
 
   Widget _buildPageSidebar(BuildContext context) {
@@ -76,14 +100,14 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                       icon: Container(
                         margin: const EdgeInsets.only(top: 2, bottom: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xffbfbfbf),
-                          // color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(6),
+                          // color: const Color(0xffbfbfbf),
+                          color: Theme.of(context).primaryColor,
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         width: 25,
                         height: 25,
-                        child: const Icon(
-                          SFSymbols.cube,
+                        child: Icon(
+                          plugin.icon,
                           size: 16,
                           color: Colors.white,
                         ),
@@ -103,7 +127,64 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
             ],
           ),
         ),
-        const SizedBox(height: 4),
+        if (_latestVersion != null &&
+            _latestVersion!.buildNumber > Env.instance.appBuildNumber)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(
+              left: 14,
+              right: 14,
+              top: 14,
+              bottom: 14,
+            ),
+            padding: const EdgeInsets.only(
+              left: 12,
+              right: 12,
+              top: 12,
+              bottom: 14,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Update available',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text.rich(
+                  TextSpan(
+                    text:
+                        'AnyInspect version ${_latestVersion!.version} is now available. Click to ',
+                    children: [
+                      TextSpan(
+                        text: 'download',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            await launch('${Env.instance.webUrl}/docs');
+                          },
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         const Divider(height: 0),
         const _SidebarFooter(),
       ],
@@ -142,12 +223,25 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
       body: Builder(builder: (_) {
         Size size = MediaQuery.of(context).size;
         if (_clients.isEmpty || _selectedClientId == null) {
-          return const Center(
-            child: Text('NO APPLICATIONS FOUND'),
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'NO APPLICATIONS FOUND',
+                  style: TextStyle(fontSize: 16),
+                ),
+                CupertinoButton(
+                  child: const Text('Adding to your app'),
+                  onPressed: () async {
+                    await launch('${Env.instance.webUrl}/docs');
+                  },
+                ),
+              ],
+            ),
           );
         }
         return Container(
-          margin: const EdgeInsets.only(right: 14),
           decoration: BoxDecoration(
             border: Platform.isWindows
                 ? Border(top: BorderSide(color: Theme.of(context).dividerColor))
@@ -169,8 +263,10 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
               ),
             ),
             data: MultiSplitViewThemeData(
-              dividerThickness: 14,
-              dividerPainter: DividerPainters.grooved1(),
+              dividerThickness: 1,
+              dividerPainter: DividerPainters.background(
+                color: Theme.of(context).dividerColor,
+              ),
             ),
           ),
         );
@@ -279,7 +375,7 @@ class _SidebarHeader extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 margin: const EdgeInsets.only(
                   left: 14,
@@ -385,12 +481,12 @@ class _SidebarFooter extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(top: 14, bottom: 14),
           child: MenuItem(
-            icon: Icon(
-              SFSymbols.gear_alt,
-              size: 18,
-              color: Theme.of(context).textTheme.bodyText2!.color!,
-            ),
-            title: const Text('Settings'),
+            // icon: Icon(
+            //   SFSymbols.gear_alt,
+            //   size: 18,
+            //   color: Theme.of(context).textTheme.bodyText2!.color!,
+            // ),
+            // title: const Text('Settings'),
             detailText: Padding(
               padding: const EdgeInsets.only(),
               child: Text(
@@ -404,25 +500,25 @@ class _SidebarFooter extends StatelessWidget {
                 ),
               ),
             ),
-            onTap: () {
-              Size size = MediaQuery.of(context).size;
-              Future<void> future = showDialog(
-                context: context,
-                builder: (ctx) {
-                  return Center(
-                    child: SizedBox(
-                      width: size.width * 0.6,
-                      height: size.height * 0.8,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: const SettingsPage(),
-                      ),
-                    ),
-                  );
-                },
-              );
-              future.whenComplete(() => {});
-            },
+            // onTap: () {
+            //   Size size = MediaQuery.of(context).size;
+            //   Future<void> future = showDialog(
+            //     context: context,
+            //     builder: (ctx) {
+            //       return Center(
+            //         child: SizedBox(
+            //           width: size.width * 0.6,
+            //           height: size.height * 0.8,
+            //           child: ClipRRect(
+            //             borderRadius: BorderRadius.circular(4),
+            //             child: const SettingsPage(),
+            //           ),
+            //         ),
+            //       );
+            //     },
+            //   );
+            //   future.whenComplete(() => {});
+            // },
           ),
         ),
       ],

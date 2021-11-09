@@ -1,1 +1,2 @@
-export 'device/device.dart';
+export 'device.dart';
+export 'version.dart';

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:anyinspect_client/anyinspect_client.dart';
 import 'package:anyinspect_ui/anyinspect_ui.dart';
 import 'package:flutter/material.dart' hide DataTable;
@@ -17,22 +19,31 @@ class NetworkInspector extends StatefulWidget {
   State<NetworkInspector> createState() => _NetworkInspectorState();
 }
 
-class _NetworkInspectorState extends State<NetworkInspector> {
+class _NetworkInspectorState extends State<NetworkInspector>
+    with AnyInspectPluginEventListener {
   final List<NetworkRecord> _records = [];
 
   NetworkRecord? _selectedRecord;
 
   @override
   void initState() {
-    widget.plugin.receive('request', (data) {
-      NetworkRecordRequest req = NetworkRecordRequest.fromJson(data);
-      _onRequest(req);
-    });
-    widget.plugin.receive('response', (data) {
-      NetworkRecordResponse res = NetworkRecordResponse.fromJson(data);
-      _onResponse(res);
-    });
+    widget.plugin.addEventListener(this);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.plugin.removeEventListener(this);
+    super.dispose();
+  }
+
+  @override
+  void onEvent(AnyInspectPluginEvent event) {
+    if (event.name == 'request') {
+      _onRequest(NetworkRecordRequest.fromJson(event.arguments));
+    } else if (event.name == 'response') {
+      _onResponse(NetworkRecordResponse.fromJson(event.arguments));
+    }
   }
 
   void _onRequest(NetworkRecordRequest request) {
@@ -55,9 +66,6 @@ class _NetworkInspectorState extends State<NetworkInspector> {
   List<DataColumn> _buildDataColumns() {
     return const [
       DataColumn(
-        label: Text('Method'),
-      ),
-      DataColumn(
         label: Text('Uri'),
       ),
       DataColumn(
@@ -78,6 +86,119 @@ class _NetworkInspectorState extends State<NetworkInspector> {
       NetworkRecordRequest request = record.request!;
       NetworkRecordResponse? response = record.response;
 
+      TextStyle defaultTextStyle = TextStyle(
+        color: Theme.of(context).textTheme.bodyText2!.color!,
+      );
+
+      if (response != null && response.statusCode >= 400) {
+        defaultTextStyle = defaultTextStyle.copyWith(color: Colors.red);
+      }
+
+      List<DataCell> cells = [
+        DataCell(
+          Builder(
+            builder: (_) {
+              Color bgColor = Colors.black;
+              switch (request.method.toLowerCase()) {
+                case 'post':
+                  bgColor = const Color(0xff49cc90);
+                  break;
+                case "get":
+                  bgColor = const Color(0xff61affe);
+                  break;
+                case "put":
+                  bgColor = const Color(0xfffca130);
+                  break;
+                case "delete":
+                  bgColor = const Color(0xfff93e3e);
+                  break;
+                case "head":
+                  bgColor = const Color(0xff9012fe);
+                  break;
+                case "patch":
+                  bgColor = const Color(0xff50e3c2);
+                  break;
+                case "disabled":
+                  bgColor = const Color(0xffebebeb);
+                  break;
+                case "options":
+                  bgColor = const Color(0xff0d5aa7);
+                  break;
+              }
+              return Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                    margin: const EdgeInsets.only(right: 10),
+                    padding: const EdgeInsets.only(
+                      left: 4,
+                      right: 4,
+                      top: 2,
+                      bottom: 2,
+                    ),
+                    child: Text(
+                      request.method,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      request.uri,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: defaultTextStyle,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        DataCell(
+          Builder(
+            builder: (_) {
+              if (response != null) {
+                return Text(
+                  '${response.statusCode}',
+                  style: defaultTextStyle,
+                );
+              }
+              return Container();
+            },
+          ),
+        ),
+        DataCell(
+          Builder(
+            builder: (_) {
+              if (response != null) {
+                Duration duration = Duration(
+                  milliseconds: response.timeStamp - request.timeStamp,
+                );
+                return Text(
+                  '${duration.inMilliseconds} ms',
+                  style: defaultTextStyle,
+                );
+              }
+              return Container();
+            },
+          ),
+        ),
+        DataCell(
+          Text(
+            DateFormat('HH:mm:ss').format(
+              DateTime.fromMillisecondsSinceEpoch(request.timeStamp),
+            ),
+            style: defaultTextStyle,
+          ),
+        ),
+      ];
+
       DataRow dataRow = DataRow(
         selected: _selectedRecord?.id == record.id,
         onSelectChanged: (bool? selected) {
@@ -86,48 +207,7 @@ class _NetworkInspectorState extends State<NetworkInspector> {
           }
           setState(() {});
         },
-        cells: <DataCell>[
-          DataCell(
-            Text(request.method),
-          ),
-          DataCell(
-            Text(
-              request.uri,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          DataCell(
-            Builder(
-              builder: (_) {
-                if (response != null) {
-                  return Text('${response.statusCode}');
-                }
-                return Container();
-              },
-            ),
-          ),
-          DataCell(
-            Builder(
-              builder: (_) {
-                if (response != null) {
-                  Duration duration = Duration(
-                    milliseconds: response.timeStamp - request.timeStamp,
-                  );
-                  return Text('${duration.inMilliseconds} ms');
-                }
-                return Container();
-              },
-            ),
-          ),
-          DataCell(
-            Text(
-              DateFormat('HH:mm:ss').format(
-                DateTime.fromMillisecondsSinceEpoch(request.timeStamp),
-              ),
-            ),
-          ),
-        ],
+        cells: cells,
       );
       rows.add(dataRow);
     }
@@ -145,16 +225,16 @@ class _NetworkInspectorState extends State<NetworkInspector> {
           children: [
             DataViewerItem(
               title: const Text('Request URL'),
-              detailText: Text(request.uri),
+              detailText: SelectableText(request.uri),
             ),
             DataViewerItem(
               title: const Text('Request Method'),
-              detailText: Text(request.method),
+              detailText: SelectableText(request.method),
             ),
             if (response != null)
               DataViewerItem(
                 title: const Text('Status Code'),
-                detailText: Text('${response.statusCode}'),
+                detailText: SelectableText('${response.statusCode}'),
               ),
           ],
         ),
@@ -163,8 +243,8 @@ class _NetworkInspectorState extends State<NetworkInspector> {
           children: [
             for (var key in (request.headers.keys))
               DataViewerItem(
-                title: Text(key),
-                detailText: Text('${request.headers[key]}'),
+                title: SelectableText(key),
+                detailText: SelectableText('${request.headers[key]}'),
               ),
           ],
         ),
@@ -173,8 +253,8 @@ class _NetworkInspectorState extends State<NetworkInspector> {
           children: [
             if (request.body != null)
               Padding(
-                padding: const EdgeInsets.only(left: 14, right: 14),
-                child: Text(
+                padding: const EdgeInsets.all(14),
+                child: SelectableText(
                   request.body,
                 ),
               ),
@@ -186,8 +266,8 @@ class _NetworkInspectorState extends State<NetworkInspector> {
             children: [
               for (var key in (response.headers.keys))
                 DataViewerItem(
-                  title: Text(key),
-                  detailText: Text('${response.headers[key]}'),
+                  title: SelectableText(key),
+                  detailText: SelectableText('${response.headers[key]}'),
                 ),
             ],
           ),
@@ -197,8 +277,8 @@ class _NetworkInspectorState extends State<NetworkInspector> {
             children: [
               if (response.body != null)
                 Padding(
-                  padding: const EdgeInsets.only(left: 14, right: 14),
-                  child: Text(
+                  padding: const EdgeInsets.all(14),
+                  child: SelectableText(
                     response.body,
                   ),
                 ),
@@ -212,7 +292,7 @@ class _NetworkInspectorState extends State<NetworkInspector> {
   Widget build(BuildContext context) {
     return Inspector(
       child: DataTable(
-        initialColumnWeights: const [1, 4, 1, 1, 1],
+        initialColumnWeights: const [3, 1, 1, 1],
         columns: _buildDataColumns(),
         rows: _buildDataRows(),
       ),

@@ -8,15 +8,24 @@ import './includes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await WindowManager.instance.ensureInitialized();
-  await initEnv();
-  WindowManager.instance.setTitle('AnyInspect');
+  await windowManager.ensureInitialized();
+  await init();
+
+  windowManager.waitUntilReadyToShow().then((_) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    await windowManager.setTitle('AnyInspect');
+    await windowManager.show();
+  });
 
   String? localIpAddress = await NetworkInfo().getWifiIP();
   await AnyInspectServer.instance.start(
     address: localIpAddress!,
     port: 7700,
   );
+
+  // Env.instance.appBuildNumber = 1;
+  // Env.instance.appVersion = '0.1.1';
+  // ApiClient.instance.setDebug();
 
   runApp(const MyApp());
 }

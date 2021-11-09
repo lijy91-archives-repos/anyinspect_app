@@ -72,7 +72,7 @@ class _MenuItemState extends State<MenuItem> {
       ),
       decoration: BoxDecoration(
         color: widget.selected ? Theme.of(context).primaryColor : null,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Builder(
         builder: (_) {

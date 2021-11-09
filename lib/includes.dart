@@ -1,13 +1,15 @@
-export './inspectors/inspectors.dart';
-export './models/models.dart';
-export './pages/pages.dart';
-export './themes/themes.dart';
-export './utilities/utilities.dart';
-export './widgets/widgets.dart';
+export 'inspectors/inspectors.dart';
+export 'models/models.dart';
+export 'networking/networking.dart';
+export 'pages/pages.dart';
+export 'themes/themes.dart';
+export 'utilities/utilities.dart';
+export 'widgets/widgets.dart';
 
 import 'package:anyinspect_server/anyinspect_server.dart';
 
-import './models/models.dart';
+import 'models/models.dart';
+import 'utilities/env.dart';
 
 extension AnyInspectServerExt on AnyInspectServer {
   List<Device> get allDevices {
@@ -20,4 +22,8 @@ extension AnyInspectServerExt on AnyInspectServer {
             systemVersion: e.deviceSystemVersion!))
         .toList();
   }
+}
+
+Future<void> init() async {
+  await initEnv();
 }

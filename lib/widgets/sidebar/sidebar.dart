@@ -13,9 +13,6 @@ class Sidebar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).canvasColor,
-        border: Border(
-          right: BorderSide(color: Theme.of(context).dividerColor),
-        ),
       ),
       child: Column(
         children: children,

@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sfsymbols/flutter_sfsymbols.dart';
 import 'package:multi_split_view/multi_split_view.dart';
+import 'package:preference_list/preference_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../includes.dart';
@@ -172,7 +173,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
-                            await launch('${Env.instance.webUrl}/docs');
+                            await launch('${Env.instance.webUrl}/release-notes');
                           },
                       ),
                       const TextSpan(text: '.'),
@@ -201,6 +202,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
       );
     }
     return IndexedStack(
+      key: Key(_selectedClientId!),
       index: index,
       children: [
         for (var plugin in selectedClient.plugins)
@@ -385,15 +387,15 @@ class _SidebarHeader extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 child: Row(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      width: 28,
-                      height: 28,
-                      margin: const EdgeInsets.only(right: 8),
-                    ),
+                    // Container(
+                    //   decoration: BoxDecoration(
+                    //     color: Theme.of(context).primaryColor,
+                    //     borderRadius: BorderRadius.circular(4),
+                    //   ),
+                    //   width: 28,
+                    //   height: 28,
+                    //   margin: const EdgeInsets.only(right: 8),
+                    // ),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -406,6 +408,8 @@ class _SidebarHeader extends StatelessWidget {
                                   Theme.of(context).textTheme.bodyText2!.color,
                               fontSize: 12,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             appIdentifier,
@@ -417,6 +421,8 @@ class _SidebarHeader extends StatelessWidget {
                                   .withOpacity(0.5),
                               fontSize: 10,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -479,17 +485,10 @@ class _SidebarFooter extends StatelessWidget {
     return Column(
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 14, bottom: 14),
-          child: MenuItem(
-            // icon: Icon(
-            //   SFSymbols.gear_alt,
-            //   size: 18,
-            //   color: Theme.of(context).textTheme.bodyText2!.color!,
-            // ),
-            // title: const Text('Settings'),
-            detailText: Padding(
-              padding: const EdgeInsets.only(),
-              child: Text(
+          margin: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Text(
                 '${Env.instance.appVersion}+${Env.instance.appBuildNumber}',
                 style: TextStyle(
                   color: Theme.of(context)
@@ -499,26 +498,23 @@ class _SidebarFooter extends StatelessWidget {
                       .withOpacity(0.5),
                 ),
               ),
-            ),
-            // onTap: () {
-            //   Size size = MediaQuery.of(context).size;
-            //   Future<void> future = showDialog(
-            //     context: context,
-            //     builder: (ctx) {
-            //       return Center(
-            //         child: SizedBox(
-            //           width: size.width * 0.6,
-            //           height: size.height * 0.8,
-            //           child: ClipRRect(
-            //             borderRadius: BorderRadius.circular(4),
-            //             child: const SettingsPage(),
-            //           ),
-            //         ),
-            //       );
-            //     },
-            //   );
-            //   future.whenComplete(() => {});
-            // },
+              Expanded(child: Container()),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  child: Image.asset(
+                    'assets/images/github_mark.png',
+                    width: 16,
+                    height: 16,
+                  ),
+                  onPressed: () async {
+                    await launch('https://github.com/anyinspect/anyinspect');
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ],

@@ -234,11 +234,14 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                   'NO APPLICATIONS FOUND',
                   style: TextStyle(fontSize: 16),
                 ),
-                CupertinoButton(
-                  child: const Text('Adding to your app'),
-                  onPressed: () async {
-                    await launch('${Env.instance.webUrl}/docs');
-                  },
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: CupertinoButton(
+                    child: const Text('Adding to your app'),
+                    onPressed: () async {
+                      await launch('${Env.instance.webUrl}/docs');
+                    },
+                  ),
                 ),
               ],
             ),

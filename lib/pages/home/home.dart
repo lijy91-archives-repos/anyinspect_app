@@ -173,7 +173,8 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () async {
-                            await launch('${Env.instance.webUrl}/release-notes');
+                            await launch(
+                                '${Env.instance.webUrl}/release-notes');
                           },
                       ),
                       const TextSpan(text: '.'),
@@ -288,6 +289,14 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
   void onClientDisconnect(AnyInspectClient client) {
     _devices = AnyInspectServer.instance.allDevices;
     _clients = AnyInspectServer.instance.allClients;
+    if (_clients.indexWhere((e) => e.id == _selectedClientId) == -1) {
+      if (_clients.isNotEmpty) {
+        _selectedClientId = _clients.first.id;
+      } else {
+        _selectedClientId = null;
+        _selectedClientPluginId = null;
+      }
+    }
     setState(() {});
   }
 }

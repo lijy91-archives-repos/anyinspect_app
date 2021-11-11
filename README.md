@@ -14,7 +14,7 @@ A tool for debugging your Flutter apps.
 
 | Linux | macOS | Windows |
 | :---: | :---: | :-----: |
-|  ✔️   |  ✔️   |   ✔️    |
+|  ➖   |  ✔️   |   ➖    |
 
 ## Installation
 

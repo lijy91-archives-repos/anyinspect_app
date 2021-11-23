@@ -4,7 +4,7 @@
 
 A tool for debugging your Flutter apps.
 
-[![Discord](https://img.shields.io/badge/discord-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/uJcUXQrs)
+[![Discord](https://img.shields.io/badge/discord-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/RzFrAhmXFY)
 
 ---
 
@@ -14,7 +14,7 @@ A tool for debugging your Flutter apps.
 
 | Linux | macOS | Windows |
 | :---: | :---: | :-----: |
-|  ➖   |  ✔️   |   ➖    |
+|   ➖   |   ✔️   |    ✔️    |
 
 ## Installation
 

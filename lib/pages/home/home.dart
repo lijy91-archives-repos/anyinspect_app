@@ -193,6 +193,9 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     );
   }
 
+
+
+
   Widget _buildPageContent(BuildContext context) {
     int index = selectedClient.plugins.indexWhere(
       (e) => e.id == _selectedClientPluginId,
@@ -285,6 +288,10 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     _devices = AnyInspectServer.instance.allDevices;
     _clients = AnyInspectServer.instance.allClients;
     _selectedClientId = _clients.first.id;
+    // 当插件部位空的状态下，默认选中第一个插件
+    if(selectedClient.plugins.isNotEmpty){
+      _selectedClientPluginId = selectedClient.plugins.first.id;
+    }
     setState(() {});
   }
 

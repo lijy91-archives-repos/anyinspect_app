@@ -1,14 +1,17 @@
 import 'dart:io';
 
+import 'package:anyinspect_app/widgets/ig_suffix_dialog.dart';
 import 'package:anyinspect_client/anyinspect_client.dart';
 import 'package:anyinspect_server/anyinspect_server.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_sfsymbols/flutter_sfsymbols.dart';
+import 'package:hive/hive.dart';
+import 'package:menubar/menubar.dart' as menubar;
 import 'package:multi_split_view/multi_split_view.dart';
-import 'package:preference_list/preference_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../includes.dart';
@@ -40,6 +43,8 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
   String? _selectedClientId;
   String? _selectedClientPluginId;
 
+  bool _enableAutoSelectPlugin = false;
+
   AnyInspectClient get selectedClient {
     return _clients.firstWhere(
       (e) => e.id == _selectedClientId,
@@ -52,18 +57,63 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     );
   }
 
+  /// 显示菜单栏
+  void showCustomMenu() {
+    menubar.setApplicationMenu([
+      menubar.Submenu(label: 'Setting', children: [
+        menubar.MenuItem(
+            label:
+                'Auto select first plugin (${_enableAutoSelectPlugin ? 'on' : 'off'})',
+            enabled: true,
+            shortcut: LogicalKeySet(
+                LogicalKeyboardKey.alt, LogicalKeyboardKey.backspace),
+            onClicked: () async {
+              setState(() {
+                _enableAutoSelectPlugin = !_enableAutoSelectPlugin;
+              });
+              final box = await Hive.openBox('setting');
+              box.put('auto_select_first_plugin', _enableAutoSelectPlugin);
+            }),
+        const menubar.MenuDivider(),
+        menubar.MenuItem(
+          label: 'Ig request suffix',
+          enabled: true,
+          onClicked: (){
+            IgSuffixDialog.show(context);
+          },
+          shortcut: LogicalKeySet(
+              LogicalKeyboardKey.control,
+              LogicalKeyboardKey.keyF
+          )
+        )
+      ]),
+    ]);
+  }
+
   @override
   void initState() {
     AnyInspectServer.instance.addListener(this);
     super.initState();
-
     _loadData();
+    _loadSetting();
+
   }
 
   @override
   void dispose() {
     AnyInspectServer.instance.removeListener(this);
     super.dispose();
+  }
+
+
+  /// 加载配置
+  void _loadSetting(){
+    Hive.openBox('setting').then((value) {
+      final _isOpen =
+      value.get('auto_select_first_plugin', defaultValue: false);
+      _enableAutoSelectPlugin = _isOpen;
+      setState(() {});
+    });
   }
 
   void _loadData() async {
@@ -193,9 +243,6 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     );
   }
 
-
-
-
   Widget _buildPageContent(BuildContext context) {
     int index = selectedClient.plugins.indexWhere(
       (e) => e.id == _selectedClientPluginId,
@@ -225,6 +272,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
 
   @override
   Widget build(BuildContext context) {
+    showCustomMenu();
     return Scaffold(
       body: Builder(builder: (_) {
         Size size = MediaQuery.of(context).size;
@@ -289,7 +337,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     _clients = AnyInspectServer.instance.allClients;
     _selectedClientId = _clients.first.id;
     // 当插件部位空的状态下，默认选中第一个插件
-    if(selectedClient.plugins.isNotEmpty){
+    if (selectedClient.plugins.isNotEmpty && _enableAutoSelectPlugin) {
       _selectedClientPluginId = selectedClient.plugins.first.id;
     }
     setState(() {});

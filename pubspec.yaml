@@ -48,10 +48,18 @@ dependencies:
   url_launcher: ^6.0.12
   window_manager: ^0.0.5
   yaml: ^3.1.0
+  hive: ^2.0.4
+  hive_flutter: ^1.1.0
+
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
+
+
+  menubar:
+    path: ../flutter-desktop-embedding/plugins/menubar
 
 dev_dependencies:
   flutter_test:

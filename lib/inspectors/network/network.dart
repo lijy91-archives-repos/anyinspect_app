@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:anyinspect_client/anyinspect_client.dart';
 import 'package:anyinspect_ui/anyinspect_ui.dart';
 import 'package:flutter/material.dart' hide DataTable;
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
 import 'network_record.dart';
@@ -22,6 +23,7 @@ class NetworkInspector extends StatefulWidget {
 class _NetworkInspectorState extends State<NetworkInspector>
     with AnyInspectPluginEventListener {
   final List<NetworkRecord> _records = [];
+  List<String> _igList = [];
 
   NetworkRecord? _selectedRecord;
 
@@ -29,12 +31,39 @@ class _NetworkInspectorState extends State<NetworkInspector>
   void initState() {
     widget.plugin.addEventListener(this);
     super.initState();
+    loadIgSuffixList();
   }
 
   @override
   void dispose() {
     widget.plugin.removeEventListener(this);
     super.dispose();
+  }
+
+  // 加载忽略后缀列表
+  void loadIgSuffixList() {
+    Hive.openBox('setting').then((value) {
+      final _str = value.get('ig_suffix_str').toString();
+      if (_str.isNotEmpty) {
+        final _arr = _str.split(',');
+        if (_arr.isNotEmpty) {
+          _igList = _arr;
+        }
+      }
+    });
+  }
+
+  // 判断是不是需要被忽略的uri
+  bool _isIgSuffix(String uri){
+    var _r = false;
+    for (var element in _igList) {
+    final _index=   uri.lastIndexOf(element);
+      if(_index>=0){
+        _r = true;
+        continue;
+      }
+    }
+    return _r;
   }
 
   @override
@@ -51,8 +80,12 @@ class _NetworkInspectorState extends State<NetworkInspector>
       id: request.requestId,
       request: request,
     );
-    _records.add(record);
-    setState(() {});
+    final uri = record.request?.uri;
+    final _isIgUri = _isIgSuffix(uri??'');
+    if(!_isIgUri){
+      _records.add(record);
+      setState(() {});
+    }
   }
 
   void _onResponse(NetworkRecordResponse response) {

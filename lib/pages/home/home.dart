@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
     try {
       _latestVersion = await ApiClient.instance.version('latest').get();
       setState(() {});
-    } catch (error) {}
+    } catch (_) {}
   }
 
   Widget _buildPageSidebar(BuildContext context) {
@@ -316,7 +316,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                 }),
               ],
               controller: MultiSplitViewController(
-                initialWeights: [280 / size.width],
+                weights: [280 / size.width],
               ),
             ),
             data: MultiSplitViewThemeData(

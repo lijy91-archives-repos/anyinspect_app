@@ -158,6 +158,8 @@ class _NetworkInspectorState extends State<NetworkInspector>
                   bgColor = const Color(0xff0d5aa7);
                   break;
               }
+
+              var showUri = request.uri.replaceAll('https://${request.headers['host']??''}', '');
               return Row(
                 children: [
                   Container(
@@ -182,7 +184,7 @@ class _NetworkInspectorState extends State<NetworkInspector>
                   ),
                   Expanded(
                     child: Text(
-                      request.uri,
+                      showUri,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: defaultTextStyle,
@@ -202,7 +204,9 @@ class _NetworkInspectorState extends State<NetworkInspector>
                   style: defaultTextStyle,
                 );
               }
-              return Container();
+              return const Text('fetching...',style: TextStyle(
+                color: Colors.teal
+              ),);
             },
           ),
         ),
@@ -215,7 +219,9 @@ class _NetworkInspectorState extends State<NetworkInspector>
                 );
                 return Text(
                   '${duration.inMilliseconds} ms',
-                  style: defaultTextStyle,
+                  style: defaultTextStyle.copyWith(
+                    color: _getMillisecondsColors(duration.inMilliseconds)
+                  ),
                 );
               }
               return Container();
@@ -245,6 +251,17 @@ class _NetworkInspectorState extends State<NetworkInspector>
       rows.add(dataRow);
     }
     return rows;
+  }
+
+  // 根据请求耗时显示对应的颜色
+  Color _getMillisecondsColors(int milliseconds){
+    Color color = Colors.green;
+    if(milliseconds >= 2000 && milliseconds<10000){
+      color = Colors.orange;
+    }else if(milliseconds>=10000){
+      color = Colors.red;
+    }
+    return color;
   }
 
   Widget _buildSelectedRecordViewer(BuildContext context) {

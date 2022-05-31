@@ -12,6 +12,7 @@ import 'package:preference_list/preference_list.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../includes.dart';
+import '../../includes.dart' as any_ui;
 
 extension AnyInspectPluginExt on AnyInspectPlugin {
   IconData get icon {
@@ -97,7 +98,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                 title: const Text('PLUGINS'),
                 children: [
                   for (AnyInspectPlugin plugin in (selectedClient.plugins))
-                    MenuItem(
+                    any_ui.MenuItem(
                       icon: Container(
                         margin: const EdgeInsets.only(top: 2, bottom: 2),
                         decoration: BoxDecoration(
@@ -254,6 +255,12 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                 : null,
           ),
           child: MultiSplitViewTheme(
+            data: MultiSplitViewThemeData(
+              dividerThickness: 1,
+              dividerPainter: DividerPainters.background(
+                color: Theme.of(context).dividerColor,
+              ),
+            ),
             child: MultiSplitView(
               children: [
                 _buildPageSidebar(context),
@@ -265,13 +272,7 @@ class _HomePageState extends State<HomePage> with AnyInspectServerListener {
                 }),
               ],
               controller: MultiSplitViewController(
-                initialWeights: [280 / size.width],
-              ),
-            ),
-            data: MultiSplitViewThemeData(
-              dividerThickness: 1,
-              dividerPainter: DividerPainters.background(
-                color: Theme.of(context).dividerColor,
+                weights: [280 / size.width],
               ),
             ),
           ),
@@ -354,7 +355,7 @@ class _SidebarHeader extends StatelessWidget {
                   children: [
                     for (AnyInspectClient client
                         in clients.where((e) => e.deviceId == device.id))
-                      MenuItem(
+                      any_ui.MenuItem(
                         title: Text(
                           client.appName ?? client.appIdentifier ?? '',
                         ),

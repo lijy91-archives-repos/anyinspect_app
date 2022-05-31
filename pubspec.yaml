@@ -46,7 +46,7 @@ dependencies:
       ref: main
       url: https://github.com/leanflutter/preference_list
   url_launcher: ^6.0.12
-  window_manager: ^0.0.5
+  window_manager: ^0.2.3
   yaml: ^3.1.0
 
   # The following adds the Cupertino Icons font to your application.

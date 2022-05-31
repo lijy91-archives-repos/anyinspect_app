@@ -1,8 +1,7 @@
-import 'dart:ui';
-
 import 'package:anyinspect_client/anyinspect_client.dart';
 import 'package:anyinspect_ui/anyinspect_ui.dart';
 import 'package:flutter/material.dart' hide DataTable;
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'network_record.dart';
@@ -258,6 +257,26 @@ class _NetworkInspectorState extends State<NetworkInspector>
                   request.body,
                 ),
               ),
+          ],
+        ),
+        DataViewerSection(
+          title: const Text("CURL"),
+          children: [
+            IconButton(
+                icon: const Icon(Icons.copy_all),
+                tooltip: 'Copy CURL to clipboard',
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: request.toCurl()));
+                  const snackBar =
+                      SnackBar(content: Text('Copied to clipboard'));
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: SelectableText(
+                request.toCurl(),
+              ),
+            ),
           ],
         ),
         if (response != null)

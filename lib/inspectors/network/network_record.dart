@@ -48,6 +48,18 @@ class NetworkRecordRequest {
       'body': body,
     }..removeWhere((key, value) => value == null);
   }
+
+  String toCurl() {
+    final StringBuffer sb = StringBuffer();
+    sb.write('curl -X ${method} "${uri}"');
+    if (body != null) {
+      sb.write(' -d \'${body}\'');
+    }
+    for (var key in headers.keys) {
+      sb.write(' -H \'$key: ${headers[key]}\'');
+    }
+    return sb.toString();
+  }
 }
 
 class NetworkRecordResponse {
